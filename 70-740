@@ -1,0 +1,103 @@
+
+
+***BGInfo - Paste a shortcut to a batch file in the Common Startup folder (shell:common startup)
+		Directory:\..\Bginfo64.exe "config-file".bgi /silent /nolicprompt /timer:0
+
+*** fsutil - creates dummy files
+
+*** Powershell Direct - can bypass network layer and connect through the bus layer of a vm during a remote session
+
+*** Tools for mass deployment of OS and updates:
+	1. Windows Deployment Services (WDS)
+	2. System Center Configuration Manager (SCCM)
+	3. Windows Server Update Services (WSUS)
+
+*** Shutdown/Logoff/Restart:
+	shutdown /s /t 0 - Shutting down
+	shutdown /l /t 0 - Logging out
+	shutdown /r /t 0 - Restarting
+
+*** netsh - Configure network i.e.
+		netsh interface ipv4 set address name="?" static A.A.A.A M.M.M.M G.G.G.G
+		netsh interface ipv4 set dns name="?" static D.D.D.D [index=2]
+		netsh advfirewall set allprofiles state off
+
+*** sconfig - basic server configuration in Core Edition
+
+*** Get-Command - Use in powershell with wildcard and noun to list available cmdlets i.e. Get-Command *net*
+*** Update-Help - Use in powershell to update help.
+*** Get-Help - Use in powershell to view help for a particular cmdlet.
+
+*** Administrative Share: \\host\c$
+
+*** Enter-PSSession vs Invoke-Command
+	Both uses http for remote management
+	Invoke-Command -ComputerName  -ScriptBlock {} : this allows targeting multiple machine at once
+
+*** Desired State Configuration (DSC) - powershell code script, to avoid configuration drift, idempotent
+	Managed Object Framework (MOF) File - deliverable via Start-DscConfiguration
+	Local Confihuration Manager (LCM) - Modes: ApplyOnly/ApplyAndMonitor/ApplyAndAutoCorrect
+	Test-DscConfiguration - if True, then Compliant
+
+*** Activation - Retail License/OEM License/Volume License
+	Volume Activation Services
+	to check license status: slmgr /dlv
+	Activation Models:
+	Multiple Access Keys (MAK) - suitable for <50 machines, may use Volume Activation Management Tool (VAMT)
+	Key Management Service (KMS) - suitable for >50 machines, uses VAMT to manage Customer Specific Volume License Key (CSVLK), the clients are given public Generic Volume License Keys (GVLK) through Active Directory DNS
+	Active-Directory-Based Activation (ADBA) - CSVLK is an AD object in the DC, domain members contain GVLK
+	Automatic Virtual Machine Activation (AVMA) - a properly activated Hyper-V host will automatically activate all guests containg public AVMA keys 
+
+*** Version Upgradation
+	In-place Upgrade - overwriting (auto migration occurs from Windows.OLD and the new Windows folder), has many restrictions
+	Clean Installation+Migration - Windows Server Migration Tools (includes smigdeploy and powershell cmdlets)
+
+*** Nano Server - completely remotely managed, local logon available into recovery console only
+	Joining domain is done by harvesting blob from an already joined machine
+	Uses Powershell Core which can be accessed via Windows Remote Management (WinRM)
+	Roles and Features are Packages
+	Supports DSC, no support for Group Policy
+	Supports only 64 bit
+	NanoServerImageGenerator - powershell module containing cmdlets to create Nano server image/vm
+	NanoServerImageBuilder - graphical tool to create Nano server image/vm
+
+*** Virtualization
+	Microsoft Assessment & Planning (MAP) Toolkit - uses Windows Management Instrumentation (WMI) to query machines in an environment
+	Hyper-V uses Linux Integration Services (LIS) & FreeBSD Integration Services (BIS) drivers to support Linux machines
+
+*** Images
+	Deployment Image Servicing & Management (DISM) Utility can work on WIM files or VHD/X
+
+*** Disks
+	Disk ---partition---> Volume
+	Sector Size - fixed by manufacturer
+	Cluster Size/Allocation Unit Size (AUS) - configurable during formatting, should be chosen according to workload
+	Partition Style:
+		Master Boot Record (MBR) - works on BIOS firmware, stores partition table in boot sector only
+		GUID Partition Table (GPT) - works on UEFI firmware, stores copy of partition table in all partitions
+	File System:
+		New Technology File System (NTFS) - bootable and supports  disk quota, file-level encryption or removable media
+		Resilient File System (ReFS) - works based on metadata stored in B-Tree, has inherent integrity checking and cloning feature, is not bootable, does not support disk quota, file-level encryption or removable media
+
+*** Virtual Disks - has the benefit of thin provisiioning and portability
+	Fixed Provisioning - Allocate ahead of time
+	Thin Provisioning - Allocate dynamically
+
+*** SMB (Server Message Block) & NFS (Network File System)
+
+*** Storage:
+	Locally Attached Storage
+	Direct Attached Storage
+	Network Attached Storage
+	Just a Bunch of Disks (JBOD)
+
+*** Storage Spaces - storage virtualization
+	Physical Disks < Storage Pool < Storage Space < Virtual Disks < Volumes (???)
+
+*** Storage Replica - disaster recovery, superior to Distributed File System Recovery (DFSR) in older versions of Windows Server
+	Server to Server (manual failover)
+	Cluster to Cluster (manual failover)
+	Stretch Cluster (automatic failover inside/across sites)
+	Server to Self
+
+*** Data Deduplication - saves storage by storeing chunks of duplicate data in a chunk store and places a pointer in the original location
