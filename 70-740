@@ -3,7 +3,7 @@
 ***BGInfo - Paste a shortcut to a batch file in the Common Startup folder (shell:common startup)
 		Directory:\..\Bginfo64.exe "config-file".bgi /silent /nolicprompt /timer:0
 
-*** fsutil - creates dummy files
+*** fsutil - can be used to create dummy files
 
 *** Powershell Direct - can bypass network layer and connect through the bus layer of a vm during a remote session
 
@@ -83,16 +83,39 @@
 	Fixed Provisioning - Allocate ahead of time
 	Thin Provisioning - Allocate dynamically
 
-*** SMB (Server Message Block) & NFS (Network File System)
-
-*** Storage:
+*** Share - underlying protocol is SMB/NFS
+	Server Message Block (SMB) - supports Windows clients
+	Network File System (NFS) - supports Linux clients
+	File Server Resource Manager (FSRM) - allows advanced configuration
+	Hidden Share - created by appending $ to share name, can be accessed through UNC Path name
+	Access Based Enumeration - views only resources that the viewer has permission to atleast read
+	
+*** Permission - DENY always overrides ALLOW
+	Share Permission - applied when browsing through a network share
+	Folder/NTFS Permission - applied when accessing the shared directory locally
+	Resource
+	Principal
+	Inheritence
+	Effective Access - Combination of all permission a user is finally granted from all sources i.e. special ACL, inheritence, group membership
+	
+*** Storage
 	Locally Attached Storage
 	Direct Attached Storage
 	Network Attached Storage
 	Just a Bunch of Disks (JBOD)
+	Interfaces: USB, SATA, SCSI, iSCSI, SAS
+	Tiers: SSD, HDD
 
 *** Storage Spaces - storage virtualization
-	Physical Disks < Storage Pool < Storage Space < Virtual Disks < Volumes (???)
+	Physical Disks <> Storage Pool <> Storage Space <> Virtual Disks <> Volumes
+	Resiliency Steeings: Simple - RAID 0, Mirror - RAID 1, Parity - RAID 5
+	Storage Spaces Direct: ?
+
+*** Advanced Storage Features:
+	Internet Small Computer Systems Interface (iSCSI) - allows access to SAN over IP network without Fiber Channel
+	Internet Storage Name Service (iSNS) - simplifies deployment for enterprise iSCSI
+	Data Center Bridging (DCB) - allows SAN and LAN traffic to coexist
+	Multi Protocol I/O (MPIO) - provides redundant connections to storage
 
 *** Storage Replica - disaster recovery, superior to Distributed File System Recovery (DFSR) in older versions of Windows Server
 	Server to Server (manual failover)
