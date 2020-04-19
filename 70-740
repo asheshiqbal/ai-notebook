@@ -5,7 +5,7 @@
 
 *** fsutil - can be used to create dummy files
 
-*** Powershell Direct - can bypass network layer and connect through the bus layer of a vm during a remote session
+*** Powershell Direct - uses -VMName instead of -ComputerName, can bypass network layer and connect through the bus layer of a vm during a remote session
 
 *** Tools for mass deployment of OS and updates:
 	1. Windows Deployment Services (WDS)
@@ -110,17 +110,41 @@
 	Physical Disks <> Storage Pool <> Storage Space <> Virtual Disks <> Volumes
 	Resiliency Steeings: Simple - RAID 0, Mirror - RAID 1, Parity - RAID 5
 	Storage Spaces Direct: ?
+	Logical Unit Number (LUN): ?
 
 *** Advanced Storage Features:
-	Internet Small Computer Systems Interface (iSCSI) - allows access to SAN over IP network without Fiber Channel
-	Internet Storage Name Service (iSNS) - simplifies deployment for enterprise iSCSI
-	Data Center Bridging (DCB) - allows SAN and LAN traffic to coexist
-	Multi Protocol I/O (MPIO) - provides redundant connections to storage
+	Internet Small Computer Systems Interface (iSCSI) - allows access to SAN/NAS using SCSI commands over IP network without needing Fiber Channel, the storage is the iSCSI Target and the client is the iSCSI Initiator 
+	Internet Storage Name Service (iSNS) - simplifies deployment for enterprise level iSCSI by acting as DNS
+	Data Center Bridging (DCB) - allows SAN and LAN traffic to coexist by prioritizing policy
+	Multi Protocol I/O (MPIO) - provides redundancy at physical connection level to storage 
 
-*** Storage Replica - disaster recovery, superior to Distributed File System Recovery (DFSR) in older versions of Windows Server
-	Server to Server (manual failover)
-	Cluster to Cluster (manual failover)
-	Stretch Cluster (automatic failover inside/across sites)
-	Server to Self
+*** Storage Replica - suitable for disaster recovery, works in block level, superior to Distributed File System Replication (DFSR) in older versions of Windows Server which works in file level
+	Replication Partnership Scenarios:
+		Server to Server - manual failover
+		Cluster to Cluster - manual failover
+		Stretch Cluster - automatic failover inside/across sites
+		Server to Self
 
-*** Data Deduplication - saves storage by storeing chunks of duplicate data in a chunk store and places a pointer in the original location
+*** Data Deduplication - saves storage by storeing chunks of duplicate data in a chunk store and places a pointer called reparse point in the original location
+
+*** Hyper-V
+	System Center Virtual Machine Manager (SCVMM)
+	Generation 1 - uses standard driver to emulate hardware
+	Generation 2 - uses synthetic driver, software based, no emulation layer
+	Non Unifom Memory Access (NUMA) Spanning
+	Smart Paging
+	Resource Metering
+	Direct Device Assignment (DDA) - PCI
+	Shared Virtual Drive - used in the context of guest failover cluster
+	VHD Set
+	Pass-through Disks - a VM can have exclusive access to a disk attached to the host
+	Quality of Service (QoS) - specifies minimum/maximum IOPS that a virtual disk can consume from the disk that it lives on 
+	Differencing Disks - parent-child relationship
+	Production Checkpoint - backups the complete data along with application
+	Fiber Channel Adapter - connects the VM to the SAN through a virtual SAN on the host
+	Single Root I/O Virtualization (SRIOV) - connects VM directly to the host's physical NIC bypassing virtual switch
+	NIC Teaming - two or more NICs are teamed as one, provides hardware-independent bandwidth aggregation, load balancing, fault tolerance, failover
+	Switch Embeded Teaming (SET)
+	Remote Direct Memory Access (RDMA) - allows NIC to communicate directly with application memory bypassing OS buffer
+
+*** Container
