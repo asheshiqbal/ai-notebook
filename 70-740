@@ -1,5 +1,4 @@
 
-
 ***BGInfo - Paste a shortcut to a batch file in the Common Startup folder (shell:common startup)
 		Directory:\..\Bginfo64.exe "config-file".bgi /silent /nolicprompt /timer:0
 
@@ -125,9 +124,9 @@
 		Stretch Cluster - automatic failover inside/across sites
 		Server to Self
 
-*** Data Deduplication - saves storage by storeing chunks of duplicate data in a chunk store and places a pointer called reparse point in the original location
+*** Data Deduplication - saves storage by storing chunks of duplicate data in a chunk store and places a pointer called reparse point in the original location
 
-*** Hyper-V
+*** Hyper-V - hardware virtualization
 	System Center Virtual Machine Manager (SCVMM)
 	Generation 1 - uses standard driver to emulate hardware
 	Generation 2 - uses synthetic driver, software based, no emulation layer
@@ -147,4 +146,42 @@
 	Switch Embeded Teaming (SET)
 	Remote Direct Memory Access (RDMA) - allows NIC to communicate directly with application memory bypassing OS buffer
 
-*** Container
+*** Container - OS virtualization
+	Windows Container - container kernel is shared among the containers
+	Hyper-V Container - each container uses own kernel
+
+*** Migration - moving
+	Live Migration - fastest, requires shared storage, only VM running states are moved
+	Shared Nothing Live Migration - moves both VM running state and local storage
+	Storage Migration
+	CredSSP authentication protocol - does not support double hops
+	Common Internet File System (CIFS) - old service name of SMB
+	Microsoft Virtual System Migration Service
+
+*** Failover Cluster - high availability feature, eliminates single point of failure
+	Cluster Types:
+		Single Domain Cluster - relies on AD
+		Multi Domain Cluster - relies on DNS
+		Workgroup Cluster - relies on DNS
+	Quorum - number of failures that a cluster can withstand before shutting itself down, based on voting from odd number of nodes in the cluster
+	Cluster Aware Updating (CAU)
+	Cluster OS Roliing Upgrade
+	Cluster Database - can be restored from backup, authoritative/nonauthoritative
+	Failback - failover back to preferred owner when possible
+	Highly Available Hyper-V:
+		Node Fairness - balancing feature that automatically live-migrates guest machines away from an overutilized node
+		VM Network Health Feature
+		VM Monitoring - allows cluster to automatically restart a VM if a service becomes unresposive multiple times
+		Drain On Shutdown
+		VM Guest Cluster
+
+*** Active-Active Cluster Model
+	SMB Multi Channel - aggregates bandwidth of multiple NICs
+	Cluster Shared Volume File System (CSVFS) - allows multiple machines to simultaniously mount the same volume
+	Scale Out File Server (SoFS)
+
+*** Storage Spaces Direct (S2D) - locally attached software defined storage
+	Disaggregated
+	Hyperconverged
+
+*** Network Load Balancing (NLB)
