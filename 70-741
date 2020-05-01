@@ -1,0 +1,12 @@
+
+*** DNS
+	InstallWindowsFeature DNS -IncludeManagementTools
+	Forwarder - used by a DNS server to foward query to an external DNS server
+	Cient-side:
+		ipconfig /displaydns
+		ipconfig /flushdns
+		Clear-DnsClientCache
+	Server-side:
+		Show-DnsServerCache
+		Clear-DnsServerCache
+    
