@@ -33,6 +33,8 @@
 	Both uses http for remote management
 	Invoke-Command -ComputerName  -ScriptBlock {} : this allows targeting multiple machine at once
 
+*** Role - defines purpose of a machine, Role Services - underlying components that make up a server role , Feature - augments server role by adding tools and support
+
 *** Desired State Configuration (DSC) - powershell code script, to avoid configuration drift, idempotent
 	Managed Object Framework (MOF) File - deliverable via Start-DscConfiguration
 	Local Confihuration Manager (LCM) - Modes: ApplyOnly/ApplyAndMonitor/ApplyAndAutoCorrect
@@ -147,8 +149,12 @@
 	Remote Direct Memory Access (RDMA) - allows NIC to communicate directly with application memory bypassing OS buffer
 
 *** Container - OS virtualization
+	Container Feature & Docker
 	Windows Container - container kernel is shared among the containers
-	Hyper-V Container - each container uses own kernel
+	Hyper-V Container - each container uses own isolated kernel
+	Layer of images
+	Container Network: NAT, Transparent, L2Bridge, L2Tunnel
+	Container Data Volumes - sharing between host and container or two containers
 
 *** Migration - moving
 	Live Migration - fastest, requires shared storage, only VM running states are moved
@@ -185,3 +191,6 @@
 	Hyperconverged
 
 *** Network Load Balancing (NLB)
+
+*** Windows Admin Center (WAC) - browser-based management tool that utilizes Poweshell Remoting and WMI over WinRM
+
