@@ -1,12 +1,51 @@
 
 *** DNS
+	Recursive query
+	Iterative query - walking down the tree from root server
+	Forward lookup
+	Reverse lookup - uses the PTR record
 	InstallWindowsFeature DNS -IncludeManagementTools
-	Forwarder - used by a DNS server to foward query to an external DNS server
-	Cient-side:
+	Forwarder - used by a DNS server to fowrard query to another DNS server
+	Conditional Forwarder
+	Zone - can either reside in a zone file or inside the AD 
+		Primary, Secondary, Stub, Forward, Reverse 
+		Multi-master model - available if DNS is integrated into Directory Service
+	DNS Round Robin - attempt by DNS server to load-balance
+	DNS Delegation - reference from the NS of a domain to the NS of a sub-domain
+	Glue Record - an NS record should have an associated A record in a stub zone
+	Cient-side perspective:
 		ipconfig /displaydns
 		ipconfig /flushdns
 		Clear-DnsClientCache
-	Server-side:
+	Server-side perspective:
 		Show-DnsServerCache
 		Clear-DnsServerCache
-    
+	Add-DnsServerForwarder
+	Remove-DnsServerForwarder
+	Add-DnsServerConditionalForwarderZone [target domain] [server ip]
+	Root Hints - basic information stored in cache.dns for reaching root name servers on public internet
+		Add-DnsServerRootHint [fqdn] [ip]
+	nslookup type=A/AAAA/PTR/NS/MX/SRV/SOA/TXT
+	ResolveDnsName
+	Add-DnsServerResourceRecord[A] -IPv4Address -Name -ZoneName -CreatePtr
+	GlobalNames Zone - allows single-label name resolution
+		Set-DnsServerGlobalNameZone -AlwaysQueryServer $true
+		Set-DnsServerGlobalNameZone -enable $true
+		Add-DnsServerPrimaryZone -Name GlobalNames -ReplicationScope Domain
+		Add-DnsServerResourceRecordCName -HostNameAlias dc-nug.nuggetlab.com -Name testhost -ZoneName GlobalNames
+	Set-DnsServerRecursionScope -Name . -EnableRecursion $false
+	Add-DnsServerRecursionScope -Name "OurPeople" -EnableRecursion $true
+	Add-DnsServerQueryResolutionPolicy -Name "OurRecursionPolicy" -Action ALLOW -ApplyOnRecursion -RecursionScope "OurPeople" -ServerInterfaceIP "EQ,192.168.1.100"
+	Remove-DnsServerQueryResolutionPolicy -Name "OurRecursionPolicy"
+	DNS Security (DNSSEC)
+		Digital Signature - uses PKI
+		Key Signing Key (KSK) and Zone Signing Key (ZSK)
+		Trust Anchor/Point - stores public key
+		Name Resolution Policy Table (NRPT) - enforces DNSSEC on clients
+		netsh namespace show policy
+		Get-DnsServerTrustAnchor -Name nuggetlab.com
+		Get-DnsServerDnsSecZoneSetting -ZoneName nuggetlab.com
+		Get-DnsServerZone
+	Socket Pool
+	Cache Locking
+
