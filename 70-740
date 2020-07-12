@@ -30,10 +30,11 @@
 *** Administrative Share: \\host\c$
 
 *** Enter-PSSession vs Invoke-Command
-	Both uses http for remote management
+	Both uses http for remote management, not RPC based dcom
 	Invoke-Command -ComputerName  -ScriptBlock {} : this allows targeting multiple machine at once
 
 *** Role - defines purpose of a machine, Role Services - underlying components that make up a server role , Feature - augments server role by adding tools and support
+	indistinguishable by PowerShell which treats everything as Feature/Sub-feature
 
 *** Desired State Configuration (DSC) - powershell code script, to avoid configuration drift, idempotent
 	Managed Object Framework (MOF) File - deliverable via Start-DscConfiguration
@@ -41,6 +42,8 @@
 	Test-DscConfiguration - if True, then Compliant
 
 *** Activation - Retail License/OEM License/Volume License
+	in windows server 2016, Virtual OS Environment (VOSE) = Physical OS Environment (POSE)
+	Core Based Licensing - minimum 8 core licenses per Physical CPU, minimum 16 core licenses per Server
 	Volume Activation Services
 	to check license status: slmgr /dlv
 	Activation Models:
@@ -77,7 +80,7 @@
 		Master Boot Record (MBR) - works on BIOS firmware, stores partition table in boot sector only
 		GUID Partition Table (GPT) - works on UEFI firmware, stores copy of partition table in all partitions
 	File System:
-		New Technology File System (NTFS) - bootable and supports  disk quota, file-level encryption or removable media
+		New Technology File System (NTFS) - bootable and supports disk quota, file-level encryption or removable media
 		Resilient File System (ReFS) - works based on metadata stored in B-Tree, has inherent integrity checking and cloning feature, is not bootable, does not support disk quota, file-level encryption or removable media
 
 *** Virtual Disks - has the benefit of thin provisiioning and portability
@@ -108,8 +111,9 @@
 	Tiers: SSD, HDD
 
 *** Storage Spaces - storage virtualization
-	Physical Disks <> Storage Pool <> Storage Space <> Virtual Disks <> Volumes
-	Resiliency Steeings: Simple - RAID 0, Mirror - RAID 1, Parity - RAID 5
+	Physical Disks <> Storage Pool <> Storage Space <> Virtual Disks (not VHD) <> Volumes
+	Resiliency Settings: Simple - RAID 0, Mirror - RAID 1, Parity - RAID 5
+	Enclosure Awareness - minimum 3 JBODS required to mirror data across them
 	Storage Spaces Direct: ?
 	Logical Unit Number (LUN): ?
 
@@ -132,20 +136,21 @@
 	System Center Virtual Machine Manager (SCVMM)
 	Generation 1 - uses standard driver to emulate hardware
 	Generation 2 - uses synthetic driver, software based, no emulation layer
-	Non Unifom Memory Access (NUMA) Spanning
-	Smart Paging
+	Non Unifom Memory Access (NUMA) Spanning - shares memory used by processors
+	Smart Paging - required by VMs if startup memory is insufficient
 	Resource Metering
-	Direct Device Assignment (DDA) - PCI
-	Shared Virtual Drive - used in the context of guest failover cluster
+	Direct Device Assignment (DDA) - PCI devices of the host can be made directly available to VMs
+	Shared Virtual Drive - used in the context of guest failover cluster, all nodes can access a VHD simultaneously
 	VHD Set
-	Pass-through Disks - a VM can have exclusive access to a disk attached to the host
+	Pass-through Disks - a VM can have exclusive access to a physical disk attached to the host
 	Quality of Service (QoS) - specifies minimum/maximum IOPS that a virtual disk can consume from the disk that it lives on 
 	Differencing Disks - parent-child relationship
 	Production Checkpoint - backups the complete data along with application
-	Fiber Channel Adapter - connects the VM to the SAN through a virtual SAN on the host
+	Fiber Channel Adapter - connects the VM to the SAN through a virtual SAN switch on the host, NPIV supported HBA required
 	Single Root I/O Virtualization (SRIOV) - connects VM directly to the host's physical NIC bypassing virtual switch
+	VM Queue (VMQ) - stores incoming packets on the NIC and directly deliver to VMs bypassing virtual switch
 	NIC Teaming - two or more NICs are teamed as one, provides hardware-independent bandwidth aggregation, load balancing, fault tolerance, failover
-	Switch Embeded Teaming (SET)
+	Switch Embeded Teaming (SET) - alternative to NIC teaming
 	Remote Direct Memory Access (RDMA) - allows NIC to communicate directly with application memory bypassing OS buffer
 
 *** Container - OS virtualization
@@ -172,7 +177,10 @@
 	Quorum - number of failures that a cluster can withstand before shutting itself down, based on voting from odd number of nodes in the cluster
 	Cluster Aware Updating (CAU)
 	Cluster OS Roliing Upgrade
-	Cluster Database - can be restored from backup, authoritative/nonauthoritative
+	Cluster Database - can be restored from backup
+		Backup - wbadmin start systemstatebackup -backuptarget:?
+		Authoritative Restore - wbadmin start recovery -version:? -itemtype:app -items:cluster
+		Nonauthoritative Restore - wbadmin start systemstaterecovery -version:?
 	Failback - failover back to preferred owner when possible
 	Highly Available Hyper-V:
 		Node Fairness - balancing feature that automatically live-migrates guest machines away from an overutilized node
