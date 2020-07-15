@@ -1,2 +1,1 @@
-# ai-notebook
-personal notebook
+# notebook
