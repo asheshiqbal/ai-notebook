@@ -105,5 +105,17 @@
 		Get-NetAdapter -Name "Ethernet 1"
 		Get-NetIPAddress -InterfaceIndex 6 -AddressFamily IPv4
 		Resolve-DnsName srv-xyz.hmm.com
-
-
+	Scavenging - removal of dynamically updated records that become stale
+	DNS-based Authentication of Named Entities (DANE)
+	TLSA Record
+		Add-DnsServerResourceRecord -CertificateAssociationData <hashvalue> -CertificateUsage DomainIssuedCertificate -MatchingType Sha256Hash -Selector SubjectPublicKeyInfo -TLSA -ZoneName nuggetlab.com -Name _443._tcp.ww1
+	Statistics
+		Clear-DnsServerStatistics -Force
+		Clear-DnsServerStatistics -ZoneName nuggetlab.com -Force
+		Get-DnsServerStatistics
+		Get-DnsServerStatistics -ZoneName nuggetlab.com
+		$stats_all = Get-DnsServerStatistics
+		$stats_all.PacketStatistics
+		$stats_zone_nug = Get-DnsServerStatistics -ZoneName nuggetlab.com
+		$stats_zone_nug.ZoneTransferStatistics
+		$stats_zone_nug.ZoneQueryStatistics
