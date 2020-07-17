@@ -65,7 +65,6 @@
 		Set-DnsServerResponseRateLimiting -Mode Disable -Force
 	DNS Policy - Server based/Zone based
 		Get-Command -Module DnsServer -Name *policy*
-
 		Add-DnsServerPrimaryZone -Name "loadbalance.com" -ReplicationScope Domain
 		Add-DnsServerZoneScope -ZoneName "loadbalance.com" -Name "Scope-Heavy"
 		Add-DnsServerZoneScope -ZoneName "loadbalance.com" -Name "Scope-Light"
@@ -75,7 +74,6 @@
 		Add-DnsServerResourceRecord -ZoneName "loadbalance.com" -A -Name "LB-www" -IPv4Address "192.168.1.33" -ZoneScope "Scope-Heavy"
 		Add-DnsServerQueryResolutionPolicy -Name "Our-LB-Policy" -Action ALLOW -Fqdn "EQ,*" -ZoneScope "loadbalance.com,1;Scope-Light,1;Scope-Heavy,9" -ZoneName "loadbalance.com"
 		Get-DnsServerQueryResolutionPolicy -ZoneName "loadbalance.com"
-		
 		Add-DnsServerPrimaryZone -Name hmm.com -ReplicationScope Domain
 		Add-DnsServerClientSubnet -Name 64_Subnet -IPv4Subnet "192.168.1.64/26"
 		Add-DnsServerClientSubnet -Name 128_Subnet -IPv4Subnet "192.168.1.128/26"
@@ -91,7 +89,6 @@
 		Get-NetIPAddress -InterfaceAlias "Ethernet 1" -AddressFamily IPv4
 		netsh interface ipv4 set address name="Ethernet 1" static 192.168.1.129 255.255.255.0 192.168.1.1
 		Resolve-DnsName -Name srv-xyz.hmm.com		
-
 		Get-Date -DisplayHint Time
 		Get-DnsServerQueryResolutionPolicy -ZoneName hmm.com
 		Add-DnsServerQueryResolutionPolicy -zoneName hmm.com -Name "Time-Policy" -Action DENY -TimeOfDay "eq,04:00-23:00" -ProcessingOrder 2
@@ -108,7 +105,7 @@
 	Scavenging - removal of dynamically updated records that become stale
 	DNS-based Authentication of Named Entities (DANE)
 	TLSA Record
-		Add-DnsServerResourceRecord -CertificateAssociationData <hashvalue> -CertificateUsage DomainIssuedCertificate -MatchingType Sha256Hash -Selector SubjectPublicKeyInfo -TLSA -ZoneName nuggetlab.com -Name _443._tcp.ww1
+		Add-DnsServerResourceRecord -TLSA -ZoneName nuggetlab.com -Name _443._tcp -CertificateUsage DomainIssuedCertificate -MatchingType Sha256Hash -Selector SubjectPublicKeyInfo -CertificateAssociationData 4462c107c485dd6a5443f5e7a1604416034a374c3f4d10875f1c3715027563af -TimeToLive 600
 	Statistics
 		Clear-DnsServerStatistics -Force
 		Clear-DnsServerStatistics -ZoneName nuggetlab.com -Force
@@ -119,3 +116,24 @@
 		$stats_zone_nug = Get-DnsServerStatistics -ZoneName nuggetlab.com
 		$stats_zone_nug.ZoneTransferStatistics
 		$stats_zone_nug.ZoneQueryStatistics
+	Get-Module DNSServer -ListAvailable
+	Remove-DnsServerZone -Name practice.com -Force
+	Remove-DnsServerZone -Name 23.22.21.in-addr.arpa -Force
+	Add-DnsServerPrimaryZone -Name practice.com -ReplicationScope Domain
+	Add-DnsServerPrimaryZone -NetworkId '21.22.23.0/24' -ReplicationScope Domain
+	Add-DnsServerResourceRecord -A -Name srv5 -IPv4Address 21.22.23.5 -ZoneName practice.com -TimeToLive 01:00:00 -CreatePtr
+	Add-DnsServerResourceRecordA -Name srv6 -IPv4Address 21.22.23.6 -ZoneName practice.com
+	Add-DnsServerResourceRecordPtr -Name 6 -PtrDomainName srv6.practice.com -ZoneName 23.22.21.in-addr.arpa
+	Add-DnsServerResourceRecordCName -Name www -ZoneName practice.com -HostNameAlias srv6.practice.com
+	Add-DnsServerResourceRecordAAAA -Name srv7 -IPv6Address 2001:DB8:6783::7 -ZoneName practice.com
+	Add-DnsServerResourceRecordMX -Name smtp-mail -ZoneName practice.com -MailExchange srv5.practice.com -Preference 11
+	Add-DnsServerResourceRecord -Srv -DomainName www.practice.com -Name web -Port 80 -Priority 20 -Weight 30 -ZoneName practice.com
+	Add-DnsServerResourceRecord -Txt -ZoneName practice.com -Name Our_Text -DescriptiveText "Hello World"
+	Get-DnsServerResourceRecord -ZoneName practice.com
+	Get-DnsServerResourceRecord -ZoneName practice.com | Sort-Object RecordType
+	Get-DnsServerResourceRecord -ZoneName practice.com -RRType A
+	Add-DnsServerResourceRecord -Name The_Great -RecordData 6783 -Type 52 -ZoneName practice.com
+	Set-DnsServerZoneAging practice.com -Aging $true -ScavengeServers 192.168.1.100
+	Start-DnsServerScavenging -Force
+
+*** DHCP
