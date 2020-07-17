@@ -4,7 +4,7 @@
 	Iterative query - walking down the tree from root server
 	Forward lookup
 	Reverse lookup - uses the PTR record
-	InstallWindowsFeature DNS -IncludeManagementTools
+	Install-WindowsFeature DNS -IncludeManagementTools
 	Forwarder - used by a DNS server to fowrard query to another DNS server
 	Conditional Forwarder
 	Zone - can either reside in a zone file or integrated in the AD 
@@ -44,9 +44,66 @@
 		Key Signing Key (KSK) and Zone Signing Key (ZSK)
 		Trust Anchor/Point - stores public key
 		Name Resolution Policy Table (NRPT) - enforces DNSSEC on clients through GP in AD environment
+		Resolve-DnsName dc-nug.nuggetlab.com -DnssecOk
+		Get-DnsClientNrptPolicy
 		netsh namespace show policy
+		Get-DnsServerTrustPoint -Name nuggetlab.com
 		Get-DnsServerTrustAnchor -Name nuggetlab.com
 		Get-DnsServerDnsSecZoneSetting -ZoneName nuggetlab.com
 		Get-DnsServerZone
 	Socket Pool
+		dnscmd /Info SocketPoolSize
+		dnscmd /config /SocketPoolSize 6783
 	Cache Locking
+		Get-DnsServerCache
+		Set-DnsServerCache -LockingPercent 90
+	Response Rate Limiting (RRL)
+		Get-DnsServerResponseRateLimiting 
+		Set-DnsServerResponseRateLimiting -ResponsesPerSec 2 -ErrorsPerSec 2 -IPv4PrefixLength 26 -LeakRate 5 -Mode LogOnly -Force
+		Set-DnsServerResponseRateLimiting -ResponsesPerSec 2 -ErrorsPerSec 2 -IPv4PrefixLength 26 -LeakRate 5 -Mode Enable -Force
+		Set-DnsServerResponseRateLimiting -ResetToDefault -Force
+		Set-DnsServerResponseRateLimiting -Mode Disable -Force
+	DNS Policy - Server based/Zone based
+		Get-Command -Module DnsServer -Name *policy*
+
+		Add-DnsServerPrimaryZone -Name "loadbalance.com" -ReplicationScope Domain
+		Add-DnsServerZoneScope -ZoneName "loadbalance.com" -Name "Scope-Heavy"
+		Add-DnsServerZoneScope -ZoneName "loadbalance.com" -Name "Scope-Light"
+		Get-DnsServerZoneScope -ZoneName "loadbalance.com"
+		Add-DnsServerResourceRecord -ZoneName "loadbalance.com" -A -Name "LB-www" -IPv4Address "192.168.1.11"
+		Add-DnsServerResourceRecord -ZoneName "loadbalance.com" -A -Name "LB-www" -IPv4Address "192.168.1.22" -ZoneScope "Scope-Light"
+		Add-DnsServerResourceRecord -ZoneName "loadbalance.com" -A -Name "LB-www" -IPv4Address "192.168.1.33" -ZoneScope "Scope-Heavy"
+		Add-DnsServerQueryResolutionPolicy -Name "Our-LB-Policy" -Action ALLOW -Fqdn "EQ,*" -ZoneScope "loadbalance.com,1;Scope-Light,1;Scope-Heavy,9" -ZoneName "loadbalance.com"
+		Get-DnsServerQueryResolutionPolicy -ZoneName "loadbalance.com"
+		
+		Add-DnsServerPrimaryZone -Name hmm.com -ReplicationScope Domain
+		Add-DnsServerClientSubnet -Name 64_Subnet -IPv4Subnet "192.168.1.64/26"
+		Add-DnsServerClientSubnet -Name 128_Subnet -IPv4Subnet "192.168.1.128/26"
+		Add-DnsServerZoneScope -ZoneName hmm.com -Name "64_Scope"
+		Add-DnsServerZoneScope -ZoneName hmm.com -Name "128_Scope"
+		Add-DnsServerResourceRecord -ZoneName hmm.com -A -Name srv-xyz -IPv4Address "22.22.22.22" -ZoneScope "64_Scope"
+		Add-DnsServerResourceRecord -ZoneName hmm.com -A -Name srv-xyz -IPv4Address "33.33.33.33" -ZoneScope "128_Scope"
+		Add-DnsServerQueryResolutionPolicy -Name "64_Policy" -Action ALLOW -ClientSubnet "eq,64_Subnet" -ZoneScope "64_Scope,1" -ZoneName hmm.com
+		Add-DnsServerQueryResolutionPolicy -Name "128_Policy" -Action ALLOW -ClientSubnet "eq,128_Subnet" -ZoneScope "128_Scope,1" -ZoneName hmm.com
+		Set-DnsServerRecursionScope -Name . -EnableRecursion $false
+		Add-DnsServerRecursionScope -Name "OurPeople" -EnableRecursion $true
+		Add-DnsServerQueryResolutionPolicy -Name "OurRecursionPolicy" -Action ALLOW -ApplyOnRecursion -RecursionScope "OurPeople" -ServerInterfaceIP "EQ,192.168.1.100"
+		Get-NetIPAddress -InterfaceAlias "Ethernet 1" -AddressFamily IPv4
+		netsh interface ipv4 set address name="Ethernet 1" static 192.168.1.129 255.255.255.0 192.168.1.1
+		Resolve-DnsName -Name srv-xyz.hmm.com		
+
+		Get-Date -DisplayHint Time
+		Get-DnsServerQueryResolutionPolicy -ZoneName hmm.com
+		Add-DnsServerQueryResolutionPolicy -zoneName hmm.com -Name "Time-Policy" -Action DENY -TimeOfDay "eq,04:00-23:00" -ProcessingOrder 2
+		Set-DnsServerQueryResolutionPolicy -ZoneName hmm.com -Name "Time-Policy" -ProcessingOrder 1
+		Remove-DnsServerQueryResolutionPolicy -zoneName hmm.com -Name "Time-Policy" -Force
+		Add-DnsServerQueryResolutionPolicy -zoneName hmm.com -Name "Time-Policy" -Action IGNORE -TimeOfDay "eq,04:00-23:00" -ProcessingOrder 1
+		Remove-DnsServerQueryResolutionPolicy -zoneName hmm.com -Name "Time-Policy" -Force
+		Get-Date -DisplayHint Time
+		Add-DnsServerQueryResolutionPolicy -zoneName hmm.com -Name "Time-Policy" -Action DENY -TimeOfDay "eq,23:00-23:59" -ProcessingOrder 1
+		Set-DnsServerQueryResolutionPolicy -ZoneName hmm.com -Name "Time-Policy" -ProcessingOrder 3
+		Get-NetAdapter -Name "Ethernet 1"
+		Get-NetIPAddress -InterfaceIndex 6 -AddressFamily IPv4
+		Resolve-DnsName srv-xyz.hmm.com
+
+
