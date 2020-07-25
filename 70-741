@@ -137,3 +137,83 @@
 	Start-DnsServerScavenging -Force
 
 *** DHCP
+	DORA - Discover > Offer > Request > Acknowledge
+	ipconfig /release
+	ipconfig /renew
+	Add-DhcpServerv4Reservation -ScopeId 192.168.1.0 -IPAddress 192.168.1.150 -ClientId 00-02-b3-00-00-c1 -Description "Client-NUG"
+	DHCP Options presedence: Reservation > Class > Scope > Server
+	Set-DhcpServerv4OptionValue -DnsDomain nuggetlab.com -WinsServer 192.168.1.123 (server level)
+	Set-DhcpServerv4OptionValue -ScopeId 192.168.1.0 -DnsServer 192.168.1.100 -Router 192.168.1.1 (scope level)
+	Set-DhcpServerv4OptionValue -ReservedIP 192.168.1.150 -WinsServer 192.168.1.100 (reservation level)
+	DHCP Relay Agent
+		giaddr - IP address of the DHCP relay agent, allows the DHCP server to choose suitable scope
+	Setting DHCP IPv4 properties regarding dynamic updates to DNS:
+		Get-DnsServerResourceRecord -computer dc-nug -ZoneName nuggetlab.com -RRType A
+		Add-DnsServerPrimaryZone -computer dc-nug -NetworkId '10.0.0.0/24' -ReplicationScope Domain
+		Get-DnsServerResourceRecord -computer dc-nug -ZoneName nuggetlab.com -RRType A
+		Get-DnsServerResourceRecord -computer dc-nug -ZoneName 0.0.10.in-addr.arpa -RRType Ptr
+		Set-DhcpServerv4DnsSetting -computer dc-nug -DynamicUpdates Always -UpdateDnsRRForOlderClients $true -DeleteDnsRROnLeaseExpiry $true
+	Preboot Execution Environment (PXE)
+	Superscope
+	Multicast Scope
+		Add-DhcpServerv4Scope -Name Network_1 -StartRange 10.0.1.1 -EndRange 10.0.1.254 -State Active -SubnetMask 255.255.255.0
+		Add-DhcpServerv4Scope -Name Network_2 -StartRange 10.0.2.1 -EndRange 10.0.2.254 -State Active -SubnetMask 255.255.255.0
+		Add-DhcpServerv4ExclusionRange -ScopeId 10.0.1.0 -StartRange 10.0.1.1 -EndRange 10.0.1.10
+		Add-DhcpServerv4ExclusionRange -ScopeId 10.0.2.0 -StartRange 10.0.2.1 -EndRange 10.0.2.10
+		Set-DhcpServerv4OptionValue -ScopeId 10.0.1.0 -Router 10.0.1.1
+		Set-DhcpServerv4OptionValue -ScopeId 10.0.2.0 -Router 10.0.2.1
+		Add-DhcpServerv4Superscope -SuperscopeName Our_Superscope -ScopeId 10.0.1.0,10.0.2.0
+	Router Solicitation (RS)
+	Router Advertisement (RA)
+	Stateless Address Auto Config (SLAAC)
+	Split Scope
+	IPv6 DHCP:
+		Get-NetAdapter
+		Get-NetIPAddress
+		New-NetIPAddress -InterfaceAlias "Ethernet 0" -IPAddress 2001:db8:6783::102 -PrefixLength 64 -DefaultGateway 2001:db8:6783::100
+		Set-NetIPInterface -AddressFamily IPv6 -InterfaceAlias "Ethernet 0" -Advertising Enabled
+		Get-NetRoute -InterfaceAlias "Ethernet 0" -AddressFamily IPv6
+		Set-NetRoute -DestinationPrefix 2001:db8:6783::/64 -InterfaceAlias "Ethernet 0" -Publish Yes
+	Reconcile-DhcpServerv4IPRecord -ScopeId 192.168.1.0
+	Repair-DhcpServerv4IPRecord -ScopeId 192.168.1.0
+	Set-DhcpServerv4Scope -ScopeId 10.0.0.0 -StartRange 10.0.0.2 -EndRange 10.0.0.150
+
+***IPAM - centralized management, monnitoring and auditing for IP address space
+	Invoke-IpamGpoProvisioning -Domain nuggetlab.com -GpoPrefixName ipam-nug
+	Role Based Access Control (RBAC)
+		Roles - set of permissions
+		Access Scopes
+		Access Policies
+
+*** Routing & Remote Access Services (RRAS)
+	DirectAccess
+	Web Application Proxy
+	Network Address Translation (NAT)/Source NAT
+	Port Address Translation (PAT)/Overload
+	Port Forwarding/Destination NAT
+	Get-NetRoute -AddressFamily IPv4
+	New-NetRoute -DestinationPrefix 23.1.2.0/24 -InterfaceIndex 7 -NextHop 192.168.1.102
+	New-NetNat -Name ournat -InternalIpInterfaceAddressPrefix 192.168.1.0/24
+	Add-NetNatStaticMapping -NatName ournat -Protocol TCP -ExternalIpAddress 0.0.0.0 -InternalIpAddress 192.168.1.100 -InternalPort 80 -ExternalPort 6783
+	Add-NetNatStaticMapping -NatName ournat -Protocol UDP -ExternalIpAddress 0.0.0.0 -InternalIpAddress 192.168.1.100 -InternalPort 53 -ExternalPort 53
+	Get-NetNat
+	Get-NetNatStaticMapping
+	Get-NetNatSession
+	Virtual Private Network (VPN)
+		Remote Access VPN
+		Site-to-Site VPN
+
+
+*** Network Policy Server (NPS)
+
+
+
+
+
+dfs install
+
+Get-WindowsFeature -ComputerName DC-NUG FS-DFS*
+Invoke-Command -ComputerName DC-NUG -command {Install-WindowsFeature FS-DFS-Namespace -IncludeManagementTools}
+Invoke-Command -ComputerName SRV2-NUG,SRV3-NUG -Command {Install-WindowsFeature FS-DFS-Replication}
+Get-WindowsFeature -ComputerName SRV2-NUG FS-DFS*
+Get-WindowsFeature -ComputerName SRV3-NUG FS-DFS*
