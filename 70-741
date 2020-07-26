@@ -186,7 +186,6 @@
 		Access Policies
 
 *** Routing & Remote Access Services (RRAS)
-	DirectAccess
 	Web Application Proxy
 	Network Address Translation (NAT)/Source NAT
 	Port Address Translation (PAT)/Overload
@@ -202,9 +201,19 @@
 	Virtual Private Network (VPN)
 		Remote Access VPN
 		Site-to-Site VPN
+			On-demand Interface
+			Persistent Interface
+		DirectAccess - automatic establishment of tunnel into corporate network from a device in public internet, based on IPv6 over IPv4
+			Get-NetIPConfiguration
+			gpresult /r /scope:computer
+			Test-NetConnection 2001:db8:6783::100
+			Get-NetIPHttpsConfiguration
+		Connection Manager Administration Kit (CMAK)
+	Network Policy Server (NPS)
+		Connection Request Policy - authentication
+		Network Policy - authorization
+	Remote Access Dial-In User Service (RADIUS)
 
-
-*** Network Policy Server (NPS)
 
 
 
