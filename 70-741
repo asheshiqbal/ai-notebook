@@ -212,17 +212,82 @@
 	Network Policy Server (NPS)
 		Connection Request Policy - authentication
 		Network Policy - authorization
-	Remote Access Dial-In User Service (RADIUS)
+	Remote Access Dial-In User Service (RADIUS) - centralized AAA server
+	Border Gateway Protocol (BGP)
+		Internal - same ASN
+		External - different ASN
+		Add-BgpRouter -BgpIdentifier 192.168.1.100 -LocalASN 65000
+		Add-BgpPeer -Name SRV2-NUG -LocalIPAddress 192.168.1.100 -PeerIPAddress 192.168.1.102 -LocalASN 65000 -PeerASN 65000 -PeeringMode Automatic
+		Get-BgpStatistics
+		Add-BgpCustomRoute -Network 10.0.0.96/28
+		Get-NetRoute -AddressFamily IPv4 -Protocol bgp
+	Intra-Site Automatic Tunnel Addressing Protocol (ISATAP) - temporary tunneling of ipv6 inside ipv4
+		Set-NetIPInterface -InterfaceIndex 9 -AddressFamily IPv6 -Forwarding Enabled -Advertising Enabled
+		New-NetRoute -DestinationPrefix 2001:db8:6783:f00d::/64 -InterfaceIndex 9 -AddressFamily IPv6 -Publish Yes
+		Set-NetIsatapConfiguration -Router 23.1.2.102
+		Get-NetIsatapConfiguration
+	Teredo Tunnel - tunneling of ipv6 inside ipv4 by Teredo server at the perimiter of the ipv6 network
+		Get-NetTeredoConfiguration
+		Set-NetTeredoConfiguration -ServerName teredo.trex.fi
+	6to4 Tunnel
+		Set-NetIsatapConfiguration -State Disabled
+		Set-NetTeredoConfiguration -Type Disabled
+		Get-Net6to4Configuration
+		Set-Net6to4Configuration -State Enabled -RelayState Enabled -RelayName 23.1.2.102
 
+*** Distributed File System (DFS) Namespace - virtual representation of folder structure
+	nltest /dsgetsite
+	Get-WindowsFeature -ComputerName DC-NUG FS-DFS*
+	Invoke-Command -ComputerName DC-NUG -command {Install-WindowsFeature FS-DFS-Namespace -IncludeManagementTools}
+	Invoke-Command -ComputerName SRV2-NUG,SRV3-NUG -Command {Install-WindowsFeature FS-DFS-Replication}
+	Get-WindowsFeature -ComputerName SRV2-NUG FS-DFS*
+	Get-WindowsFeature -ComputerName SRV3-NUG FS-DFS*
+	Invoke-Command -ComputerName SRV2-NUG -command {Install-WindowsFeature FS-DFS-Namespace -IncludeManagementTools}
+	Invoke-Command -ComputerName DC-NUG -Command {Install-WindowsFeature FS-DFS-Replication}
 
+*** BranchCache
+	Hosted Cache Mode
+	Distributed Cache Mode
+	Get-BCStatus
+	Enable-BCHostedServer -RegisterSCP 
 
+*** Teaming
+	NIC Teaming - static/dynamic, switch independent/LACP
+	Switch Embeded Teaming (SET) - switch independent only, supports RDMA and SDNv2/VFP
+		Get-VmSwitch
+		New-VmSwitch -Name OurSETvSwitch -NetAdapterName "Ethernet 2","Ethernet 3","Ethernet 4" -EnableEmbededTeaming $true
 
+*** High Performance Network
+	Virtual Machine Queue (VMQ) - hardware filtering forwards packets directly to the VM with less involvement of the host
+	Single Root I/O Virtualization (SR-IOV) - allows multiple VMs to share the same PCI Express physical hardware devices
+	Receive Side Scaling (RSS) - distributes the load of network I/O accross multiple CPUs
+	Remote Direct Memory Access (RDMA) - RDMA supported network cards offer increased throughput, lower latency, lower host CPU utilization
+		Get-NetAdapterRdma
+		Enable-NetAdapterRdma "Ethernet 0"
+	SMB Direct - enabled automatically if RDMA is enabled
+	SMB Multichannel - enabled automatically if RDMA/RSS is enabled
+	QoS with DCB - prioritization of traffic
+		Install-WindowsFeature Data-Center-Bridging
+		Set-NetQosDcbxSetting -Willing $true
+		Enable-NetAdapterRdma -Name "Ethernet 0"
+		Get-NetAdapterRdma
+		New-NetQosPolicy "SMB_Direct" -NetDirectPortMatchCondition 445 -PriorityValue8021Action 6		
+		New-NetQosPolicy "Default" -Default -PriorityValue8021Action 1
+		New-NetQosTrafficClass "SMB_Direct" -Priority 6 -Algorithm ETS -Bandwidth 30
+		Enable-NetAdapterQos -InterfaceAlias "Ethernet 0"
+		Remove-NetQosTrafficClass -Confirm:$false
+		Remove-NetQosPolicy -Confirm:$false
+		Remove-WindowsFeature Data-Center-Bridging
 
+*** Software Load Balancing (SLB)
+	Virtual IP (VIP) - frontend
+	Dynamic IP (DIP) - backend
+	Direct Server Return - bypassing LB
+	North-South LB
+	East-West LB
 
-dfs install
-
-Get-WindowsFeature -ComputerName DC-NUG FS-DFS*
-Invoke-Command -ComputerName DC-NUG -command {Install-WindowsFeature FS-DFS-Namespace -IncludeManagementTools}
-Invoke-Command -ComputerName SRV2-NUG,SRV3-NUG -Command {Install-WindowsFeature FS-DFS-Replication}
-Get-WindowsFeature -ComputerName SRV2-NUG FS-DFS*
-Get-WindowsFeature -ComputerName SRV3-NUG FS-DFS*
+*** Software Defined Networking (SDN)
+	Network Controller - manages the SDN
+	Northbound API - communication between the management workstation and the network controller
+	Southbound API
+	HNV-VXLAN - tunneling in SDN
