@@ -1,0 +1,52 @@
+
+Forest
+Domain Tree
+Root Domain
+Domain Controller (DC)
+Global Catalog (GC) - read-only subset of the attributes that can be searched within AD
+NTDS - DS Database
+SYSVOL - Replication information
+AD Objects:
+	Containers
+	Organizational Unit (OU)
+Group Policy Object (GPO)
+
+Read-Only Domain Controller (RODC) - authentication is done locally at the branch RODC
+	Non-staged
+	Pre-Staged
+
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+Install-ADDSForest -DomainName nuggetlab.com -SafeModeAdministratorPassword P@$$w0rd
+Get-ADForest
+
+Install From Media (IFM)
+
+ntdsutil (New Technology Directory Service Utility)
+
+Flexible Single Master Operator (FSMO) Roles
+	netdom /query fsmo
+	1. Schema Master - forestwide scope; dictates the logical structure of the active directory infrastructure; requires "regsvr32 schmmgmt.dll" for the snap-in
+	2. Domain Naming Master - forestwide scope; responsible for naming of domains/domain trees inside the forest
+	3. PDC Emulator - domainwide scope; maintains backwards compatibility, primary time source etc.
+	4. Relative ID (RID) Master - domainwide scope; allows other domain controllers to hand out SIDs when registering new users/computers
+	5. Infrastructure Master - domainwide scope; allow domains to maintain phantoms (references to objects in other domains), handles domain upgradation etc.
+
+DC Cloning
+	Get-ADDCCloningExcludedApplicationList -GenerateXml -Force -Path C:\Windows\ntds\
+	New-ADDCCloneConfigFile -IPv4Address 192.168.1.149 -IPv4DnsResolver 192.168.1.147, =192.168.1.149 -IPv4SubnetMask 255.255.255.0 -Static -CloneComputerName DC10 -IPv4DefaultGateway 192.168.1.1 -Path C:\Windows\ntds -SiteName Default-First-Site-Name
+
+Automation of Account Management
+	Distinguised Name - represents path location inside the domain tree
+		Common Name (CN)
+		Domain Component (DC)
+	Get-Command "*aduser"
+	Get-Command "*adcomputer"
+	Get-ADUser -Identity Administrator
+	Get-ADUser -Filter *
+	Set-ADUser -Identity TUser -City "New York"
+	New-ADUser -Name PSmith -City LA
+	Remove-ADUser -Identity PSmith
+	Unlock-ADAccount -Identity TUser
+	Disable-ADAccount -Identity TUser
+	Enable-ADAccount -Identity TUser
+	Set-ADAccountPassword -Identity TUser -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "ThisIsSecure123" -Force)
