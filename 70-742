@@ -1,14 +1,19 @@
-
 Forest
-Domain Tree
-Root Domain
+	Domain Tree
+		Root/Parent Domain
+		Child Domain
+
+Functional Level - domain functional level can be equal to or higher than the forest functional level, but not lower
+
 Domain Controller (DC)
 Global Catalog (GC) - read-only subset of the attributes that can be searched within AD
+
 NTDS - DS Database
 SYSVOL - Replication information
+
 AD Objects:
 	Containers
-	Organizational Unit (OU)
+	Organizational Unit (OU) - structure to contain user/computer accounts and groups that are to be managed together
 Group Policy Object (GPO)
 
 Read-Only Domain Controller (RODC) - authentication is done locally at the branch RODC
@@ -28,17 +33,21 @@ Flexible Single Master Operator (FSMO) Roles
 	1. Schema Master - forestwide scope; dictates the logical structure of the active directory infrastructure; requires "regsvr32 schmmgmt.dll" for the snap-in
 	2. Domain Naming Master - forestwide scope; responsible for naming of domains/domain trees inside the forest
 	3. PDC Emulator - domainwide scope; maintains backwards compatibility, primary time source etc.
-	4. Relative ID (RID) Master - domainwide scope; allows other domain controllers to hand out SIDs when registering new users/computers
+	4. Relative ID (RID) Master - domainwide scope; ensures unique SIDs and allows other domain controllers to hand out SIDs when registering new users/computers
 	5. Infrastructure Master - domainwide scope; allow domains to maintain phantoms (references to objects in other domains), handles domain upgradation etc.
 
 DC Cloning
 	Get-ADDCCloningExcludedApplicationList -GenerateXml -Force -Path C:\Windows\ntds\
 	New-ADDCCloneConfigFile -IPv4Address 192.168.1.149 -IPv4DnsResolver 192.168.1.147, =192.168.1.149 -IPv4SubnetMask 255.255.255.0 -Static -CloneComputerName DC10 -IPv4DefaultGateway 192.168.1.1 -Path C:\Windows\ntds -SiteName Default-First-Site-Name
 
-Automation of Account Management
+Account
 	Distinguised Name - represents path location inside the domain tree
 		Common Name (CN)
 		Domain Component (DC)
+	User Principal Name (UPN)
+	net user USER1 P@$$w0rd /add /domain
+	redirusr ou=FL-Sales,dc=nuggetlab,dc=com
+	redircmp ou=FL-Sales,dc=nuggetlab,dc=com
 	Get-Command "*aduser"
 	Get-Command "*adcomputer"
 	Get-ADUser -Identity Administrator
@@ -50,3 +59,79 @@ Automation of Account Management
 	Disable-ADAccount -Identity TUser
 	Enable-ADAccount -Identity TUser
 	Set-ADAccountPassword -Identity TUser -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "ThisIsSecure123" -Force)
+	Search-ADAccount -AccountDisabled
+	Search-ADAccount -UsersOnly -AccountInactive -TimeSpan 60
+	Import-Csv c:\suppfiles\ad-users.csv | 
+		foreach {New-ADUser -SamAccountName $_.SAMAccountName -Name ($_.FirstName + " " + $_.LastName) -EmployeeID $_.EmployeeID 
+			-Path "CN=users,DC=nuggetlab,DC=com" -Enabled $true -ChangePasswordAtLogon $true 
+			-AccountPassword (ConvertTo-SecureString -AsPlainText 'Pa$$w0rd' -Force)}
+	New-ADOrganizationalUnit -Name FL-Sales -Path "DC=NUGGETLAB,DC=COM"
+	New-ADUser -Name "User1" -SamAccountName USER1 -Path "OU=FL-SALES,DC=NUGGETLAB,DC=COM"
+	New-ADUser -Name "User2" -SamAccountName USER2 -Path "OU=FL-SALES,DC=NUGGETLAB,DC=COM"
+	New-ADUser -Name "User3" -SamAccountName USER3 -Path "OU=FL-SALES,DC=NUGGETLAB,DC=COM"
+	New-ADGroup -Name "FL-Sales-AcctOp" -SamAccountName FL-Sales-AcctOp -GroupCategory Security -GroupScope DomainLocal -Path "OU=FL-SALES,DC=NUGGETLAB,DC=COM"
+	Add-ADGroupMember FL-Sales-AcctOp USER1,USER2,USER3
+	Get-ADGroupMember FL-Sales-AcctOp
+	
+Offline Domain Join
+	djoin /provision /domain nuggetlab.com /machine CLIENT-NUG /savefile c:\c1
+	djoin /requestodj /loadfile c:\c1 /windowspath %systemroot% /localos
+
+Groups
+	Security
+	Distribution
+	Group Scopes: Global/Universal/Domain Local
+		AGUDLP - Accounts should go inside of Global groups, which should go inside of Universal groups, which should go inside of Domain Local groups, to which Permissions should be assigned
+
+Service Accounts - entities that services are running as
+	Built-in Service Account: Local System > Local Service > Network Service
+	Custom Service Account
+	Virtual Service Account: NT SERVICE\"service name"
+	Managed Service Account (MSA):
+		New-ADServiceAccount -Name MSA-nugsrv -RestrictToSingleComputer
+		Add-ADComputerServiceAccount -Identity DC-NUG1 -ServiceAccount MSA-nugsrv
+		Install-ADServiceAccount MSA-nugsrv
+		Test-ADServiceAccount -Identity MSA-nugsrv
+	Group Managed Service Account (GMSA):
+		Add-KDSRootKey -EffectiveTime (Get-Date).AddHours((-10))
+		New-ADServiceAccount -Name GMSA-nugsrv -DNSHostName GMSA-nugsrv.nuggetlab.com -PrincipalsAllowedToRetrieveManagedPassword "Domain Computers"
+		Invoke-Command -ComputerName APP-NUG -ScriptBlock { Install-WindowsFeature RSAT-AD-PowerShell }
+		Install-ADServiceAccount GMSA-nugsrv
+		Test-ADServiceAccount -Identity GMSA-nugsrv
+	Kerberos Constrained Delegation (KCD) - allows services to act on-behalf of another user
+	Service Principal Name (SPN)
+		<service class>/<host>:<port>/<service name>
+		setspn -l DC-NUG1
+		setspn -s NUGSRV/DC-NUG1.nuggetlab.com NUGGETLAB\msa-nugsrv
+
+Account Policy
+	secpol.msc - local security policy of the local group policy
+	Get-ADDefaultDomainPasswordPolicy
+	Set-ADDefaultDomainPasswordPolicy -MinPasswordAge
+	Password Settings Object (PSO) - exceptional custom password policy that overrides the default domain policy
+
+Directory Services Restore Mode (DSRM)
+	bcdedit /set safeboot dsrepair
+	shutdown -r -t 0
+	bcdedit /deletevalue safeboot
+
+Defragmentation
+	ntdsutil > activate instance ntds > files > compact to c:\ > integrity
+	copy c:\ntds.dit c:\windows\ntds\ntds.dit
+	del c:\windows\ntds\*.log
+
+Snapshot
+	ntdsutil > activate instance ntds > snapshot > create > list all > mount
+	dsamain -dbpath C:\$SNAP_201705151744_VOLUMEC$\windows\ntds\ntds.dit -ldapport 50000
+	ntdsutil > activate instance ntds > snapshot > create > list all > unmount
+	
+Replication - AD replication works based on 'pull' model
+	Schema Partition - slow replication
+	Domain Partition - fast replication
+	repadmin /syncall DC-NUG2 dc=nuggetlab.com,dc=com /d /e /a
+	dcdiag
+	Password Replication Policy (PRP) for RODC
+	Knowledge Consistency Checker (KCC) for RODC - repadmin /kcc
+
+Trust
+	Transitive Trust Relationship
