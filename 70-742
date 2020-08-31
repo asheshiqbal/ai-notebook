@@ -134,4 +134,33 @@ Replication - AD replication works based on 'pull' model
 	Knowledge Consistency Checker (KCC) for RODC - repadmin /kcc
 
 Trust
-	Transitive Trust Relationship
+	Forest Trust
+	Shortcurt Trust
+	External Trust - NT4 domain
+	Realm Trust - kerberos non-AD type domain
+	SID Filtering - selective authentication
+
+Sites
+	New-ADReplicationSite -Name "London"
+	Site Link - inter-site transport IP/SMTP
+	
+Group Policy Object (GPO) - can be applied on Site, Domain, OU
+	Scoping, Linking, Filtering
+	Policey Settings, Preference Settings
+	Local Group Policy: User Specific Policy > Administrator Policy > Local Policy
+	dcgpofix - restoration of the default GPOs (default domain policy & default domain controller policy)
+	Windows Management Instrumation (WMI) Filter - done by WMIC Query Language (WQL)
+	Loopback Processing
+
+Certificate Authority (CA)
+	Standalone & Enterprise
+	Certificate Revokation List Distribution Point (CDP)
+	Authority Information Access (AIA)
+
+AD Federation Services (ADFS)
+	Claims - a trusted party in the federation that has information about a security principal that is going to be allowed through a trust relationship
+	Claims Provider Trust
+	Relying Partners
+	Web Application Proxy (WAP)
+
+AD Rights Management Services (ADRMS)
