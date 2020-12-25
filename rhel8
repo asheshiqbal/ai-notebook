@@ -1,0 +1,55 @@
+Red Hat Enterprise Linux 8 (ITProTV)
+====================================
+
+***Repository
+	yum - Yellowdog Update Manager
+	dnf - Dandified YUM
+	rpm - Redhat Package Manager
+	/etc/yum/yum.repos.d/
+
+***systemd - initializtion (init) system, runs mutiple services concurrently during boot unlike the older init-script system
+	/usr/lib/systemd/system/
+		service, target, ...
+	sudo systemd-analyze blame
+	Run Level
+	systemctl - allows to manage systemd configuration without touching the config files
+		sudo systemctl
+		sudo systemctl status httpd/httpd.service
+		sudo systemctl enable httpd/httpd.service
+		sudo systemctl start httpd/httpd.service
+		sudo systemctl enable --now httpd/httpd.service
+		sudo systemctl rescue
+		sudo systemctl get-default
+		sudo systemctl set-default multi-user.target
+		sudo systemctl set-default graphical.target
+
+***Kickstart - installation automation
+	default file: ks.cfg at the root of the installation media
+	tools included in the pykickstart package
+	online kickstart generator tool available in redhat customer portal
+	sudo mount -o loop rhel-8.1-x86_64-dvd.iso /mnt/cdrom/ (mounting a file)
+	vim /mnt/cdrom/isolinux/isolinux.cfg
+		label webserver
+		menu label Install RHEL8 Webserver Kickstart
+		kernel vmlinuz
+		append initrd=initrd.img inst.stage2=hd:LABEL=RHEL-8-1-0-BaseOS-x86_64 quiet ks=nfs:192.168.50.131:/exports/lickstart/webserver.cfg
+	sudo mkisofs -o rhel8-custom.iso -b isolinux/iso.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -V rhel8-custom /home/dpezet/rhel8-custom
+
+***Network
+	ifconfig
+	ip addr, ip route
+	ifdown. ifup
+	nmcli - network manager
+	/etc/sysconfig/metwork-scripts/ifcfg-ensXXX (hot plug slot i.e. usb adapter/virtual) / enpXXX (PCI) / enoXXX (on-board)/ wl etc. [interface settings]
+		BOOTPROTO="none"
+		IPADDR="192.168.50.13"
+		PREFIX="24"
+		GATEWAY="192.168.50.2"
+		DNS="8.8.8.8"
+		ONBOOT="yes"
+	/etc/sysconfig/network [global network settings]
+		GATEWAY=192.168.50.2
+	/etc/resolv.conf [global network settings]
+		nameserver=8.8.8.8
+	/etc/hosts - overrides dns
+
