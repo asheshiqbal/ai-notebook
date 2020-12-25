@@ -39,6 +39,7 @@ Red Hat Enterprise Linux 8 (ITProTV)
 	ifconfig
 	ip addr, ip route
 	ifdown. ifup
+	hostname, hostnamectl set-hostname rhel8
 	nmcli - network manager
 	/etc/sysconfig/metwork-scripts/ifcfg-ensXXX (hot plug slot i.e. usb adapter/virtual) / enpXXX (PCI) / enoXXX (on-board)/ wl etc. [interface settings]
 		BOOTPROTO="none"
@@ -47,9 +48,8 @@ Red Hat Enterprise Linux 8 (ITProTV)
 		GATEWAY="192.168.50.2"
 		DNS="8.8.8.8"
 		ONBOOT="yes"
-	/etc/sysconfig/network [global network settings]
+	/etc/sysconfig/network [global settings]
 		GATEWAY=192.168.50.2
-	/etc/resolv.conf [global network settings]
-		nameserver=8.8.8.8
+	/etc/resolv.conf [global settings]
+		nameserver 8.8.8.8
 	/etc/hosts - overrides dns
-
