@@ -22,6 +22,7 @@ Red Hat Enterprise Linux 8 (ITProTV)
 		sudo systemctl get-default
 		sudo systemctl set-default multi-user.target
 		sudo systemctl set-default graphical.target
+	service httpd status
 
 ***Kickstart - installation automation
 	default file: ks.cfg at the root of the installation media
@@ -40,7 +41,6 @@ Red Hat Enterprise Linux 8 (ITProTV)
 	ip addr, ip route
 	ifdown. ifup
 	hostname, hostnamectl set-hostname rhel8
-	nmcli - network manager
 	/etc/sysconfig/metwork-scripts/ifcfg-ensXXX (hot plug slot i.e. usb adapter/virtual) / enpXXX (PCI) / enoXXX (on-board)/ wl etc. [interface settings]
 		BOOTPROTO="none"
 		IPADDR="192.168.50.13"
@@ -53,3 +53,33 @@ Red Hat Enterprise Linux 8 (ITProTV)
 	/etc/resolv.conf [global settings]
 		nameserver 8.8.8.8
 	/etc/hosts - overrides dns
+	Network Manager - allows to manage network configuration without manually editing the config files
+		systemctl status NetworkManager
+		nmcli
+		nmcli device status
+		nmcli device show
+		nmcli connection show
+		sudo nmcli connection edit <if-name>
+			set ipv4.method manual
+			set ipv4.addr 192.168.50.13/24
+			set ipv4.gateway 192.168.50.2
+			set ipv4.dns 8.8.8.8
+			save temporary/persistent
+			quit
+		sudo nmcli connection down <if-name>
+		sudo nmcli connection up <if-name>
+
+***Time Settings
+	timedatectl
+	sudo timedatectl list-zones
+	sudo timedatectl set-timezone America/New_York
+	sudo timedatectl set-ntp false
+	sudo timedatectl set-time 15:00:00
+	NTP - /etc/chrony.conf
+		systemctl status chronyd
+		sudo systemctl restart chronyd
+		sudo timedatectl set-ntp true
+		chronyc sources
+
+***NFS - native file share for UNIX
+	 
