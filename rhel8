@@ -82,4 +82,36 @@ Red Hat Enterprise Linux 8 (ITProTV)
 		chronyc sources
 
 ***NFS - native file share for UNIX
-	 
+	Server-side:
+		yum install nfs-util
+		systemctl status nfs-server.service
+		mkdir /shared/myshare -p
+		vim /etc/exports
+			/shared (rw,sync,root_squash)
+			/shared/mtshare (rw,sync,root_squash)
+		exportfs -r
+		exportfs -v
+		firewall-cmd --permanent --add-service=mountd, rpc-bind, nfs
+		firewall-cmd --reload
+	Client-side:
+		systemctl status nfs-client.target
+		systemctl status rpcbind
+		mkdir /home/user/shared -p
+		showmount -e 192.168.50.13
+		mount -t nfs 192.168.50.13:/shared/myshare /home/user/shared
+
+***Filesystem Hierarchy Standard (FHS)
+	bin, sbin, /usr/bin, /usr/sbin, /opt/bin - binary files
+	proc - logical representation of process as files	
+	home - user files
+	srv - home directory for service accounts	
+	var - log files, print spoolers
+	etc - configuration files
+
+***File System
+	EXT4 - 50 TB, Single threaded I/O, Journaling built-in, Online defragmentation and resizing 
+	XFS - 1024 TB, Concurrent operation support, Video workloads
+	migration tools - /usr/sbin/mkfs.ext4 or mkfs.xfs
+
+***Logical Volume Manager (LVM) - controlling storage
+	lsblk - list block devices
